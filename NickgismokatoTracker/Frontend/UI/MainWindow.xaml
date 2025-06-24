@@ -1,0 +1,80 @@
+﻿<Window
+    x:Class="NickgismokatoTracker.Frontend.UI.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="NickgismokatoTracker" Height="600" Width="800">
+
+    <Grid>
+        <TabControl x:Name="MainTabControl" Margin="10">
+
+            <TabItem Header="View">
+                <Grid>
+                    <TabControl x:Name="CategoryTabs" Margin="5">
+
+                        <TabItem Header="Planning To Watch">
+                            <DataGrid x:Name="PlanningToWatchGrid" IsReadOnly="True" AutoGenerateColumns="False" />
+                        </TabItem>
+
+                        <TabItem Header="Watching">
+                            <DataGrid x:Name="WatchingGrid" IsReadOnly="True" AutoGenerateColumns="False" />
+                        </TabItem>
+
+                        <TabItem Header="Completed">
+                            <DataGrid x:Name="CompletedGrid" IsReadOnly="True" AutoGenerateColumns="False" />
+                        </TabItem>
+
+                    </TabControl>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="Add">
+                <Grid Margin="10">
+                    <StackPanel>
+                        <TextBlock Text="Add new media item" FontWeight="Bold" FontSize="16" Margin="0 0 0 10" />
+
+                        <StackPanel Orientation="Horizontal" Margin="0 0 0 5">
+                            <TextBlock Text="Title:" Width="60" VerticalAlignment="Center" />
+                            <TextBox x:Name="AddTitleTextBox" Width="200" />
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Margin="0 0 0 5">
+                            <TextBlock Text="Type:" Width="60" VerticalAlignment="Center" />
+                            <ComboBox x:Name="AddTypeComboBox" Width="200">
+                                <ComboBoxItem Content="Movie" />
+                                <ComboBoxItem Content="Series" />
+                                <ComboBoxItem Content="Anime" />
+                            </ComboBox>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Margin="0 0 0 5" x:Name="SeasonEpisodePanel" Visibility="Collapsed">
+                            <TextBlock Text="Season:" Width="60" VerticalAlignment="Center" />
+                            <TextBox x:Name="AddSeasonTextBox" Width="50" />
+                            <TextBlock Text="Episode:" Width="60" Margin="10 0 0 0" VerticalAlignment="Center" />
+                            <TextBox x:Name="AddEpisodeTextBox" Width="50" />
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Margin="0 0 0 10">
+                            <TextBlock Text="Category:" Width="60" VerticalAlignment="Center" />
+                            <ComboBox x:Name="AddCategoryComboBox" Width="200">
+                                <ComboBoxItem Content="PlanningToWatch" />
+                                <ComboBoxItem Content="Watching" />
+                                <ComboBoxItem Content="Completed" />
+                            </ComboBox>
+                        </StackPanel>
+
+                        <Button x:Name="AddButton" Content="Add" Width="100" Click="AddButton_Click" />
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="About">
+                <TextBlock Margin="10" TextWrapping="Wrap">
+                    NickgismokatoTracker v1.0
+                    &#x0a;&#x0a;A simple movies &amp; series tracker app.
+                    &#x0a;&#x0a;Built with C# and WPF.
+                </TextBlock>
+            </TabItem>
+
+        </TabControl>
+    </Grid>
+</Window>
