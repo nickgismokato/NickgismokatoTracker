@@ -53,17 +53,15 @@ namespace NickgismokatoTracker.Frontend.UI{
                 Binding = new System.Windows.Data.Binding("Date")
             });
 
-            // For Watching tab, add Season and Episode columns
-            if(grid == WatchingGrid){
-                grid.Columns.Add(new DataGridTextColumn{
-                    Header = "Season",
-                    Binding = new System.Windows.Data.Binding("Season")
-                });
-                grid.Columns.Add(new DataGridTextColumn{
-                    Header = "Episode",
-                    Binding = new System.Windows.Data.Binding("Episode")
-                });
-            }
+            // Add Season and Episode columns for all grids to handle Series/Anime items
+            grid.Columns.Add(new DataGridTextColumn{
+                Header = "Season",
+                Binding = new System.Windows.Data.Binding("Season")
+            });
+            grid.Columns.Add(new DataGridTextColumn{
+                Header = "Episode",
+                Binding = new System.Windows.Data.Binding("Episode")
+            });
         }
 
         private void AddTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e){
@@ -85,25 +83,28 @@ namespace NickgismokatoTracker.Frontend.UI{
                 return;
             }
 
-			MediaItem? item = type switch {
-				"Movie" => new MovieItem(title, DateTime.Now.ToString()),
-				"Series" => new SeriesItem(
-					title,
-					DateTime.Now.ToString(),
-					int.TryParse(AddSeasonTextBox.Text, out var s) ? s : 1,
-					int.TryParse(AddEpisodeTextBox.Text, out var ep) ? ep : 1
-				),
-				"Anime" => new AnimeItem(
-					title,
-					DateTime.Now.ToString(),
-					int.TryParse(AddSeasonTextBox.Text, out var s2) ? s2 : 1,
-					int.TryParse(AddEpisodeTextBox.Text, out var ep2) ? ep2 : 1
-				),
-				null => null,
-				_ => null
-			};
+            // Use consistent date format
+            string currentDate = DateTime.Now.ToString("dd/MM/yyyy");
 
-			if(item == null){
+            MediaItem? item = type switch{
+                "Movie" => new MovieItem(title, currentDate),
+                "Series" => new SeriesItem(
+                    title,
+                    currentDate,
+                    int.TryParse(AddSeasonTextBox.Text, out var s) ? s : 1,
+                    int.TryParse(AddEpisodeTextBox.Text, out var ep) ? ep : 1
+                ),
+                "Anime" => new AnimeItem(
+                    title,
+                    currentDate,
+                    int.TryParse(AddSeasonTextBox.Text, out var s2) ? s2 : 1,
+                    int.TryParse(AddEpisodeTextBox.Text, out var ep2) ? ep2 : 1
+                ),
+                null => null,
+                _ => null
+            };
+
+            if(item == null){
                 MessageBox.Show("Unsupported type selected.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
@@ -112,9 +113,12 @@ namespace NickgismokatoTracker.Frontend.UI{
 
             MessageBox.Show("Item added successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
 
+            // Clear form
             AddTitleTextBox.Clear();
             AddSeasonTextBox.Clear();
             AddEpisodeTextBox.Clear();
+            AddTypeComboBox.SelectedIndex = -1;
+            AddCategoryComboBox.SelectedIndex = -1;
         }
     }
 }
