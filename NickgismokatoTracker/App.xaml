@@ -4,6 +4,10 @@
              xmlns:local="clr-namespace:NickgismokatoTracker"
              StartupUri="Frontend/UI/MainWindow.xaml">
     <Application.Resources>
-
+        <!-- Basic dark theme resources -->
+        <SolidColorBrush x:Key="DarkBackgroundBrush" Color="#2d3748"/>
+        <SolidColorBrush x:Key="DarkSurfaceBrush" Color="#4a5568"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#4299e1"/>
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="#f7fafc"/>
     </Application.Resources>
 </Application>

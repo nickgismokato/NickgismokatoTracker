@@ -2,79 +2,361 @@
     x:Class="NickgismokatoTracker.Frontend.UI.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Title="NickgismokatoTracker" Height="600" Width="800">
+    Title="NickgismokatoTracker" 
+    Height="700" 
+    Width="1000"
+    MinHeight="600"
+    MinWidth="800"
+    Background="#2d3748"
+    WindowStartupLocation="CenterScreen">
+
+    <Window.Resources>
+        <!-- Define custom brushes for dark theme -->
+        <SolidColorBrush x:Key="DarkBackgroundBrush" Color="#2d3748"/>
+        <SolidColorBrush x:Key="DarkSurfaceBrush" Color="#4a5568"/>
+        <SolidColorBrush x:Key="DarkBorderBrush" Color="#718096"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#4299e1"/>
+        <SolidColorBrush x:Key="AccentHoverBrush" Color="#63b3ed"/>
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="#f7fafc"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="#a0aec0"/>
+        <SolidColorBrush x:Key="TextMutedBrush" Color="#718096"/>
+
+        <!-- Modern button style -->
+        <Style x:Key="ModernButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Border" 
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="4"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" 
+                                        Value="{StaticResource AccentHoverBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Border" Property="Background" 
+                                        Value="{StaticResource AccentBrush}"/>
+                                <Setter TargetName="Border" Property="Opacity" Value="0.8"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Modern DataGrid style -->
+        <Style x:Key="ModernDataGridStyle" TargetType="DataGrid">
+            <Setter Property="Background" Value="{StaticResource DarkBackgroundBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{StaticResource DarkBorderBrush}"/>
+            <Setter Property="RowHeaderWidth" Value="0"/>
+            <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource DarkBorderBrush}"/>
+            <Setter Property="AlternatingRowBackground" Value="{StaticResource DarkSurfaceBrush}"/>
+            <Setter Property="CanUserAddRows" Value="False"/>
+            <Setter Property="CanUserDeleteRows" Value="False"/>
+            <Setter Property="SelectionMode" Value="Single"/>
+            <Setter Property="AutoGenerateColumns" Value="False"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        </Style>
+    </Window.Resources>
 
     <Grid>
-        <TabControl x:Name="MainTabControl" Margin="10">
+        <!-- Top toolbar area similar to Snipping Tool -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
-            <TabItem Header="View">
-                <Grid>
-                    <TabControl x:Name="CategoryTabs" Margin="5">
+        <!-- Toolbar -->
+        <Border Grid.Row="0" 
+                Background="{StaticResource DarkSurfaceBrush}" 
+                BorderThickness="0,0,0,1" 
+                BorderBrush="{StaticResource DarkBorderBrush}"
+                Padding="16,8">
+            <StackPanel Orientation="Horizontal">
+                <Button x:Name="NewButton" Content="➕ New" Style="{StaticResource ModernButtonStyle}" Click="NewButton_Click"/>
+                <Button x:Name="EditButton" Content="✏️ Edit" Style="{StaticResource ModernButtonStyle}" Click="EditButton_Click" IsEnabled="False"/>
+                <Button x:Name="DeleteButton" Content="🗑️ Delete" Style="{StaticResource ModernButtonStyle}" Click="DeleteButton_Click" IsEnabled="False"/>
+                <Rectangle Width="1" Height="24" Fill="{StaticResource DarkBorderBrush}" Margin="8,4"/>
+                <Button x:Name="SaveButton" Content="💾 Save" Style="{StaticResource ModernButtonStyle}" Click="SaveButton_Click"/>
 
-                        <TabItem Header="Planning To Watch">
-                            <DataGrid x:Name="PlanningToWatchGrid" IsReadOnly="True" AutoGenerateColumns="False" />
+                <!-- Right-aligned items -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="50,0,0,0">
+                    <TextBlock Text="Total Items:" VerticalAlignment="Center" Margin="0,0,8,0" 
+                               Foreground="{StaticResource TextPrimaryBrush}"/>
+                    <TextBlock x:Name="TotalItemsLabel" Text="0" VerticalAlignment="Center" FontWeight="Bold"
+                               Foreground="{StaticResource AccentBrush}"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- Main content area -->
+        <TabControl x:Name="MainTabControl" Grid.Row="1" Margin="0" 
+                    Background="{StaticResource DarkBackgroundBrush}"
+                    Foreground="{StaticResource TextPrimaryBrush}"
+                    SelectionChanged="MainTabControl_SelectionChanged">
+
+            <!-- Planning To Watch Tab -->
+            <TabItem Header="📋 Planning To Watch" x:Name="PlanningTab">
+                <Grid Margin="16">
+                    <DataGrid x:Name="PlanningToWatchGrid" 
+                              Style="{StaticResource ModernDataGridStyle}"
+                              SelectionChanged="DataGrid_SelectionChanged"
+                              CellEditEnding="DataGrid_CellEditEnding">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Title" Binding="{Binding Title}" Width="*" MinWidth="200"/>
+                            <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="100" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="Date Added" Binding="{Binding Date}" Width="120" IsReadOnly="True"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+
+            <!-- Watching Tab with Sub-tabs -->
+            <TabItem Header="▶️ Watching" x:Name="WatchingTab">
+                <Grid Margin="16">
+                    <TabControl x:Name="WatchingSubTabs" TabStripPlacement="Top"
+                                Background="{StaticResource DarkBackgroundBrush}"
+                                Foreground="{StaticResource TextPrimaryBrush}">
+
+                        <!-- Movies Sub-tab -->
+                        <TabItem Header="🎬 Movies">
+                            <DataGrid x:Name="WatchingMoviesGrid" 
+                                      Style="{StaticResource ModernDataGridStyle}"
+                                      SelectionChanged="DataGrid_SelectionChanged"
+                                      CellEditEnding="DataGrid_CellEditEnding">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Title" Binding="{Binding Title}" Width="*" MinWidth="200"/>
+                                    <DataGridTextColumn Header="Date Added" Binding="{Binding Date}" Width="120" IsReadOnly="True"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
                         </TabItem>
 
-                        <TabItem Header="Watching">
-                            <DataGrid x:Name="WatchingGrid" IsReadOnly="True" AutoGenerateColumns="False" />
+                        <!-- Series Sub-tab -->
+                        <TabItem Header="📺 Series">
+                            <DataGrid x:Name="WatchingSeriesGrid" 
+                                      Style="{StaticResource ModernDataGridStyle}"
+                                      SelectionChanged="DataGrid_SelectionChanged"
+                                      CellEditEnding="DataGrid_CellEditEnding">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Title" Binding="{Binding Title}" Width="*" MinWidth="200"/>
+                                    <DataGridTextColumn Header="Season" Binding="{Binding Season}" Width="80"/>
+                                    <DataGridTextColumn Header="Episode" Binding="{Binding Episode}" Width="80"/>
+                                    <DataGridTextColumn Header="Date Added" Binding="{Binding Date}" Width="120" IsReadOnly="True"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
                         </TabItem>
 
-                        <TabItem Header="Completed">
-                            <DataGrid x:Name="CompletedGrid" IsReadOnly="True" AutoGenerateColumns="False" />
+                        <!-- Anime Sub-tab -->
+                        <TabItem Header="🎌 Anime">
+                            <DataGrid x:Name="WatchingAnimeGrid" 
+                                      Style="{StaticResource ModernDataGridStyle}"
+                                      SelectionChanged="DataGrid_SelectionChanged"
+                                      CellEditEnding="DataGrid_CellEditEnding">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Title" Binding="{Binding Title}" Width="*" MinWidth="200"/>
+                                    <DataGridTextColumn Header="Season" Binding="{Binding Season}" Width="80"/>
+                                    <DataGridTextColumn Header="Episode" Binding="{Binding Episode}" Width="80"/>
+                                    <DataGridTextColumn Header="Date Added" Binding="{Binding Date}" Width="120" IsReadOnly="True"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
                         </TabItem>
 
                     </TabControl>
                 </Grid>
             </TabItem>
 
-            <TabItem Header="Add">
-                <Grid Margin="10">
-                    <StackPanel>
-                        <TextBlock Text="Add new media item" FontWeight="Bold" FontSize="16" Margin="0 0 0 10" />
-
-                        <StackPanel Orientation="Horizontal" Margin="0 0 0 5">
-                            <TextBlock Text="Title:" Width="60" VerticalAlignment="Center" />
-                            <TextBox x:Name="AddTitleTextBox" Width="200" />
-                        </StackPanel>
-
-                        <StackPanel Orientation="Horizontal" Margin="0 0 0 5">
-                            <TextBlock Text="Type:" Width="60" VerticalAlignment="Center" />
-                            <ComboBox x:Name="AddTypeComboBox" Width="200">
-                                <ComboBoxItem Content="Movie" />
-                                <ComboBoxItem Content="Series" />
-                                <ComboBoxItem Content="Anime" />
-                            </ComboBox>
-                        </StackPanel>
-
-                        <StackPanel Orientation="Horizontal" Margin="0 0 0 5" x:Name="SeasonEpisodePanel" Visibility="Collapsed">
-                            <TextBlock Text="Season:" Width="60" VerticalAlignment="Center" />
-                            <TextBox x:Name="AddSeasonTextBox" Width="50" />
-                            <TextBlock Text="Episode:" Width="60" Margin="10 0 0 0" VerticalAlignment="Center" />
-                            <TextBox x:Name="AddEpisodeTextBox" Width="50" />
-                        </StackPanel>
-
-                        <StackPanel Orientation="Horizontal" Margin="0 0 0 10">
-                            <TextBlock Text="Category:" Width="60" VerticalAlignment="Center" />
-                            <ComboBox x:Name="AddCategoryComboBox" Width="200">
-                                <ComboBoxItem Content="PlanningToWatch" />
-                                <ComboBoxItem Content="Watching" />
-                                <ComboBoxItem Content="Completed" />
-                            </ComboBox>
-                        </StackPanel>
-
-                        <Button x:Name="AddButton" Content="Add" Width="100" Click="AddButton_Click" />
-                    </StackPanel>
+            <!-- Completed Tab -->
+            <TabItem Header="✅ Completed" x:Name="CompletedTab">
+                <Grid Margin="16">
+                    <DataGrid x:Name="CompletedGrid" 
+                              Style="{StaticResource ModernDataGridStyle}"
+                              SelectionChanged="DataGrid_SelectionChanged"
+                              CellEditEnding="DataGrid_CellEditEnding">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Title" Binding="{Binding Title}" Width="*" MinWidth="200"/>
+                            <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="100" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="Season" Binding="{Binding Season}" Width="80"/>
+                            <DataGridTextColumn Header="Episode" Binding="{Binding Episode}" Width="80"/>
+                            <DataGridTextColumn Header="Date Completed" Binding="{Binding Date}" Width="140" IsReadOnly="True"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
                 </Grid>
             </TabItem>
 
-            <TabItem Header="About">
-                <TextBlock Margin="10" TextWrapping="Wrap">
-                    NickgismokatoTracker v1.0
-                    &#x0a;&#x0a;A simple movies &amp; series tracker app.
-                    &#x0a;&#x0a;Built with C# and WPF.
-                </TextBlock>
+            <!-- About Tab -->
+            <TabItem Header="ℹ️ About">
+                <ScrollViewer Margin="20" VerticalScrollBarVisibility="Auto">
+                    <StackPanel MaxWidth="600">
+                        <TextBlock FontSize="24" FontWeight="Bold" Margin="0,0,0,16"
+                                   Foreground="{StaticResource TextPrimaryBrush}">
+                            NickgismokatoTracker
+                        </TextBlock>
+
+                        <TextBlock FontSize="14" Margin="0,0,0,8" TextWrapping="Wrap"
+                                   Foreground="{StaticResource TextSecondaryBrush}">
+                            Version 1.0
+                        </TextBlock>
+
+                        <TextBlock FontSize="14" Margin="0,0,0,16" TextWrapping="Wrap"
+                                   Foreground="{StaticResource TextSecondaryBrush}">
+                            A modern desktop application for tracking your movies, series, and anime viewing progress.
+                        </TextBlock>
+
+                        <TextBlock FontWeight="SemiBold" Margin="0,0,0,8"
+                                   Foreground="{StaticResource TextPrimaryBrush}">
+                            Features:
+                        </TextBlock>
+
+                        <TextBlock Margin="16,0,0,16" TextWrapping="Wrap"
+                                   Foreground="{StaticResource TextSecondaryBrush}">
+                            • Track movies, TV series, and anime<LineBreak/>
+                            • Organize content into Planning, Watching, and Completed categories<LineBreak/>
+                            • Edit progress and details in-place<LineBreak/>
+                            • Modern, dark-themed interface<LineBreak/>
+                            • Automatic data persistence with JSON storage
+                        </TextBlock>
+
+                        <TextBlock FontWeight="SemiBold" Margin="0,0,0,8"
+                                   Foreground="{StaticResource TextPrimaryBrush}">
+                            Built with:
+                        </TextBlock>
+
+                        <TextBlock Margin="16,0,0,16" TextWrapping="Wrap"
+                                   Foreground="{StaticResource TextSecondaryBrush}">
+                            • C# and .NET 8.0<LineBreak/>
+                            • WPF (Windows Presentation Foundation)<LineBreak/>
+                            • JSON serialization for data storage
+                        </TextBlock>
+
+                        <TextBlock FontWeight="SemiBold" Margin="0,0,0,8"
+                                   Foreground="{StaticResource TextPrimaryBrush}">
+                            Developer:
+                        </TextBlock>
+
+                        <TextBlock Margin="16,0,0,0" TextWrapping="Wrap"
+                                   Foreground="{StaticResource TextSecondaryBrush}">
+                            Created by Nickgismokato
+                        </TextBlock>
+                    </StackPanel>
+                </ScrollViewer>
             </TabItem>
 
         </TabControl>
+
+        <!-- Add/Edit Dialog Overlay -->
+        <Grid x:Name="DialogOverlay" Grid.RowSpan="2" Background="#80000000" Visibility="Collapsed">
+            <Border Background="{StaticResource DarkBackgroundBrush}" 
+                    CornerRadius="8" 
+                    MaxWidth="500" 
+                    MaxHeight="400"
+                    Margin="20"
+                    BorderThickness="1"
+                    BorderBrush="{StaticResource DarkBorderBrush}">
+                <Grid Margin="24">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Dialog Header -->
+                    <TextBlock x:Name="DialogTitle" Text="Add New Item" FontSize="20" FontWeight="Bold" 
+                               Margin="0,0,0,20" Grid.Row="0"
+                               Foreground="{StaticResource TextPrimaryBrush}"/>
+
+                    <!-- Dialog Content -->
+                    <StackPanel Grid.Row="1">
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="Title:" Margin="0,0,0,4" FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextPrimaryBrush}"/>
+                            <TextBox x:Name="DialogTitleTextBox" Height="36" 
+                                     Background="{StaticResource DarkSurfaceBrush}"
+                                     Foreground="{StaticResource TextPrimaryBrush}"
+                                     BorderBrush="{StaticResource DarkBorderBrush}"/>
+                        </StackPanel>
+
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="Type:" Margin="0,0,0,4" FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextPrimaryBrush}"/>
+                            <ComboBox x:Name="DialogTypeComboBox" Height="36" SelectionChanged="DialogTypeComboBox_SelectionChanged"
+                                      Background="{StaticResource DarkSurfaceBrush}"
+                                      Foreground="{StaticResource TextPrimaryBrush}"
+                                      BorderBrush="{StaticResource DarkBorderBrush}">
+                                <ComboBoxItem Content="Movie"/>
+                                <ComboBoxItem Content="Series"/>
+                                <ComboBoxItem Content="Anime"/>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <StackPanel x:Name="DialogSeasonEpisodePanel" Visibility="Collapsed" Margin="0,0,0,12">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="16"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Season:" Margin="0,0,0,4" FontWeight="SemiBold"
+                                               Foreground="{StaticResource TextPrimaryBrush}"/>
+                                    <TextBox x:Name="DialogSeasonTextBox" Height="36"
+                                             Background="{StaticResource DarkSurfaceBrush}"
+                                             Foreground="{StaticResource TextPrimaryBrush}"
+                                             BorderBrush="{StaticResource DarkBorderBrush}"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Episode:" Margin="0,0,0,4" FontWeight="SemiBold"
+                                               Foreground="{StaticResource TextPrimaryBrush}"/>
+                                    <TextBox x:Name="DialogEpisodeTextBox" Height="36"
+                                             Background="{StaticResource DarkSurfaceBrush}"
+                                             Foreground="{StaticResource TextPrimaryBrush}"
+                                             BorderBrush="{StaticResource DarkBorderBrush}"/>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="Category:" Margin="0,0,0,4" FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextPrimaryBrush}"/>
+                            <ComboBox x:Name="DialogCategoryComboBox" Height="36"
+                                      Background="{StaticResource DarkSurfaceBrush}"
+                                      Foreground="{StaticResource TextPrimaryBrush}"
+                                      BorderBrush="{StaticResource DarkBorderBrush}">
+                                <ComboBoxItem Content="PlanningToWatch"/>
+                                <ComboBoxItem Content="Watching"/>
+                                <ComboBoxItem Content="Completed"/>
+                            </ComboBox>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Dialog Buttons -->
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+                        <Button x:Name="DialogCancelButton" Content="Cancel" Width="80" Height="36" 
+                                Margin="0,0,12,0" Click="DialogCancelButton_Click"
+                                Background="{StaticResource DarkSurfaceBrush}"
+                                Foreground="{StaticResource TextPrimaryBrush}"
+                                BorderBrush="{StaticResource DarkBorderBrush}"/>
+                        <Button x:Name="DialogSaveButton" Content="Save" Width="80" Height="36" 
+                                Style="{StaticResource ModernButtonStyle}" Click="DialogSaveButton_Click"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+
     </Grid>
 </Window>
